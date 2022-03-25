@@ -50,6 +50,7 @@ public class ConnectionDescriptor implements Serializable {
         CONN_STATUS_RESET = 7,
         CONN_STATUS_UNREACHABLE = 8;
 
+   //sami 5ra
     // This is an high level status which abstracts the zdtun_conn_status_t
     public enum Status {
         STATUS_INVALID,
