@@ -1,0 +1,173 @@
+<!--
+  ~ Copyright 2018 The app Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <PreferenceCategory app:title="@string/http_server" app:iconSpaceReserved="false">
+        <EditTextPreference
+            app:key="http_server_port"
+            app:title="@string/http_server_port"
+            app:defaultValue="8080"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/udp_exporter" app:iconSpaceReserved="false">
+        <EditTextPreference
+            app:key="collector_ip_address"
+            app:title="@string/receiver_ip_address"
+            app:iconSpaceReserved="false"
+            app:defaultValue="@string/default_collector_ip"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="collector_port"
+            app:title="@string/receiver_port"
+            app:iconSpaceReserved="false"
+            app:defaultValue="@string/default_collector_port"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/traffic_inspection" app:iconSpaceReserved="false"  app:key="traffic_inspection">
+        <SwitchPreference
+            app:key="tls_decryption"
+            app:title="@string/tls_decryption"
+            app:iconSpaceReserved="false"
+            app:summary="@string/tls_decryption_summary"
+            app:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="socks5_enabled"
+            app:title="@string/socks5_proxy"
+            app:iconSpaceReserved="false"
+            app:summary="@string/enable_socks5_proxy_summary"
+            app:defaultValue="false" />
+
+        <EditTextPreference
+            app:key="socks5_proxy_ip_address"
+            app:title="@string/proxy_ip_address"
+            app:defaultValue="0.0.0.0"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="socks5_proxy_port"
+            app:title="@string/proxy_port"
+            app:iconSpaceReserved="false"
+            app:defaultValue="8050"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:key="tls_how_to"
+            app:title="@string/tls_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/tls_decryption" />
+        </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/capture_prefs" app:iconSpaceReserved="false" >
+        <SwitchPreference
+            app:key="root_capture"
+            app:title="@string/root_capture"
+            app:iconSpaceReserved="false"
+            app:summary="@string/root_capture_summary"
+            app:defaultValue="false" />
+
+        <DropDownPreference
+            app:key="capture_interface"
+            app:title="@string/capture_interface"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true"
+            app:defaultValue="\@inet" />
+
+        <SwitchPreference
+            app:key="start_at_boot"
+            android:title="@string/start_at_boot"
+            app:iconSpaceReserved="false"
+            app:summary="@string/start_at_boot_summary"
+            android:defaultValue="false" />
+
+        <SwitchPreference
+            app:key="pcapdroid_trailer"
+            app:title="@string/pcapdroid_trailer"
+            app:iconSpaceReserved="false"
+            app:summary="@string/pcapdroid_trailer_summary"
+            app:defaultValue="false" />
+
+        <Preference
+            app:key="trailer_how_to"
+            app:title="@string/trailer_how_to"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/advanced_features#45-pcapdroid-trailer" />
+        </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/security" app:iconSpaceReserved="false" app:key="security">
+        <SwitchPreference
+            app:key="malware_detection"
+            app:title="@string/malware_detection"
+            app:iconSpaceReserved="false"
+            app:summary="@string/malware_detection_summary"
+            app:defaultValue="false" />
+
+        <Preference
+            app:key="malware_detection_docs"
+            app:title="@string/malware_detection_learn_more"
+            app:iconSpaceReserved="false">
+            <intent android:action="android.intent.action.VIEW"
+                android:data="https://emanuele-f.github.io/PCAPdroid/paid_features#51-malware-detection" />
+        </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/other_prefs" app:iconSpaceReserved="false" >
+        <DropDownPreference
+            app:key="app_theme"
+            app:title="@string/app_theme"
+            android:entries="@array/app_theme_labels"
+            android:entryValues="@array/app_theme"
+            app:iconSpaceReserved="false"
+            app:defaultValue="system"
+            app:useSimpleSummaryProvider="true"/>
+
+        <DropDownPreference
+            app:key="app_language"
+            app:title="@string/app_language"
+            android:entries="@array/app_languages_labels"
+            android:entryValues="@array/app_languages"
+            app:iconSpaceReserved="false"
+            app:defaultValue="system"
+            app:useSimpleSummaryProvider="true"/>
+
+        <SwitchPreference
+            app:key="ipv6_enabled"
+            app:title="@string/ipv6"
+            app:iconSpaceReserved="false"
+            app:summary="@string/enable_ipv6_summary"
+            app:defaultValue="false" />
+
+        <Preference
+            app:key="control_permissions"
+            app:title="@string/control_permissions"
+            app:iconSpaceReserved="false"
+            android:summary="@string/control_permissions_summary">
+        </Preference>
+    </PreferenceCategory>
+</PreferenceScreen>
