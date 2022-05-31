@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:opacity="opaque">
 
-  <item android:drawable="@color/colorPrimaryDark" />
+  <item android:drawable="@color/colorBackgroundGray" />
 
   <item
-      android:drawable="@drawable/ic_logo"
+      android:drawable="@drawable/mal_def_logo"
       android:gravity="center"
       tools:targetApi="m" />
 </layer-list>

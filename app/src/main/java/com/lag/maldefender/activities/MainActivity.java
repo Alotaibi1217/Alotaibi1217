@@ -19,10 +19,14 @@
 
 package com.lag.maldefender.activities;
 
+
 import static com.lag.maldefender.activities.MainActivity.Example.finish_scan;
 
+
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -33,6 +37,8 @@ import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 
 import androidx.activity.result.ActivityResult;
@@ -43,6 +49,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -56,19 +64,26 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.lag.maldefender.AppsLoader;
 import com.lag.maldefender.Billing;
 import com.lag.maldefender.BuildConfig;
 import com.lag.maldefender.CaptureHelper;
 import com.lag.maldefender.fragments.ConnectionsFragment;
+//import com.lag.maldefender.fragments.StatusFragment;
 import com.lag.maldefender.fragments.StatusFragment;
 import com.lag.maldefender.interfaces.AppStateListener;
 import com.lag.maldefender.model.AppState;
@@ -82,6 +97,12 @@ import com.lag.maldefender.Utils;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.lag.maldefender.views.AppsListView;
+import com.onesignal.OSDeviceState;
+import com.onesignal.OSMutableNotification;
+import com.onesignal.OSNotification;
+import com.onesignal.OSNotificationReceivedEvent;
+import com.onesignal.OneSignal;
 
 import net.gotev.uploadservice.data.UploadInfo;
 import net.gotev.uploadservice.network.ServerResponse;
@@ -91,6 +112,8 @@ import net.gotev.uploadservice.protocols.multipart.MultipartUploadRequest;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -101,22 +124,38 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     private Billing mIab;
     private ViewPager2 mPager;
     private AppState mState;
+    public int istarget=0;
 
     private AppStateListener mListener;
     private Uri mPcapUri;
+    public TextView response;
+    private String userId;
+
+    private long START_TIME_IN_MILLIS = 15000;
+    private TextView mTextViewCountDown;
+    private CountDownTimer mCountDownTimer;
+    private long mTimeLeftInMillis = START_TIME_IN_MILLIS;
     private BroadcastReceiver mReceiver;
     private String mPcapFname;
     private DrawerLayout mDrawer;
+    private String content="";
     private SharedPreferences mPrefs;
+    private int x=0;
+    private int y=0;
     private NavigationView mNavView;
     private CaptureHelper mCapHelper;
+    private int iscap=1;
     private boolean usingMediaStore;
+
+
 
     private static final String TAG = "Main";
 
     private static final int POS_STATUS = 0;
     private static final int POS_CONNECTIONS = 1;
     private static final int TOTAL_COUNT = 2;
+    private Button button;
+    private TextView FilterDescription;
 
     public static final String TELEGRAM_GROUP_NAME = "PCAPdroid";
     public static final String GITHUB_PROJECT_URL = "https://github.com/emanuele-f/PCAPdroid";
@@ -133,10 +172,17 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 Log.d(TAG, "Write permission " + (isGranted ? "granted" : "denied"))
             );
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme_NoActionBar);
+
+        OSDeviceState device = OneSignal.getDeviceState();
+
+         userId = device.getUserId();//push player_id
+        Log.d(userId, "userr iddd");
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main_activity);
         setTitle("PCAPdroid");
 
@@ -145,6 +191,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         initAppState();
         checkPermissions();
+
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+        getSupportActionBar().setTitle("MalDefender");
+
 
         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mPcapUri = CaptureService.getPcapUri();
@@ -158,6 +209,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         mPager = findViewById(R.id.pager);
         setupTabs();
+
 
         /* Register for service status */
         mReceiver = new BroadcastReceiver() {
@@ -191,6 +243,24 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                 .registerReceiver(mReceiver, new IntentFilter(CaptureService.ACTION_SERVICE_STATUS));
 
 
+
+        button = findViewById(R.id.button);
+        button.setOnClickListener(v -> {
+            startCapture();
+        });
+
+        mTextViewCountDown = findViewById(R.id.text_view_countdown);
+        response = findViewById(R.id.textView3);
+
+        OneSignal.setNotificationWillShowInForegroundHandler(notificationReceivedEvent -> {
+            OSNotification notification = notificationReceivedEvent.getNotification();
+            content = notification.getBody();
+            runOnUiThread(this::color);
+            notificationReceivedEvent.complete(notification);
+
+        });
+
+
     }
 
     @Override
@@ -207,43 +277,43 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        setupNavigationDrawer();
+        //setupNavigationDrawer();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        Menu navMenu = mNavView.getMenu();
-        navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
-        navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
-        navMenu.findItem(R.id.firewall).setVisible(mIab.isRedeemed(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
+//        Menu navMenu = mNavView.getMenu();
+//        navMenu.findItem(R.id.open_root_log).setVisible(Prefs.isRootCaptureEnabled(mPrefs));
+//        navMenu.findItem(R.id.malware_detection).setVisible(Prefs.isMalwareDetectionEnabled(this, mPrefs));
+//        navMenu.findItem(R.id.firewall).setVisible(mIab.isRedeemed(Billing.FIREWALL_SKU) && !Prefs.isRootCaptureEnabled(mPrefs));
     }
 
-    private void setupNavigationDrawer() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//    private void setupNavigationDrawer() {
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//
+//        mDrawer = findViewById(R.id.drawer_layout);
+//        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.open_nav_drawer, R.string.close_nav_drawer);
+//        mDrawer.addDrawerListener(toggle);
+//        toggle.syncState();
+//
+//        mNavView = findViewById(R.id.nav_view);
+//        mNavView.setNavigationItemSelectedListener(this);
+//        View header = mNavView.getHeaderView(0);
+//
+//        TextView appVer = header.findViewById(R.id.app_version);
+//        String verStr = Utils.getAppVersion(this);
+//        appVer.setText(verStr);
+//        appVer.setOnClickListener((ev) -> {
+//            String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
+//            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
+//            Utils.startActivity(this, browserIntent);
+//        });
 
-        mDrawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawer, toolbar, R.string.open_nav_drawer, R.string.close_nav_drawer);
-        mDrawer.addDrawerListener(toggle);
-        toggle.syncState();
 
-        mNavView = findViewById(R.id.nav_view);
-        mNavView.setNavigationItemSelectedListener(this);
-        View header = mNavView.getHeaderView(0);
-
-        TextView appVer = header.findViewById(R.id.app_version);
-        String verStr = Utils.getAppVersion(this);
-        appVer.setText(verStr);
-        appVer.setOnClickListener((ev) -> {
-            String branch = (BuildConfig.DEBUG && verStr.contains(".")) ? "dev" : verStr;
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_PROJECT_URL + "/tree/" + branch));
-            Utils.startActivity(this, browserIntent);
-        });
-
-
-    }
+   // }
 
     @Override
     public void onBackPressed() {
@@ -486,11 +556,11 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         } else if(id == R.id.action_stop) {
             stopCapture();
             return true;
-        } else if (id == R.id.action_settings) {
-            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.export_sslkeylogfile) {
+//        } else if (id == R.id.action_settings) {
+//            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+//            startActivity(intent);
+//            return true;
+       } else if (id == R.id.export_sslkeylogfile) {
             startExportSslkeylogfile();
             return true;
         }
@@ -558,7 +628,9 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         mCapHelper.startCapture(new CaptureSettings(mPrefs));
     }
 
-    public void startCapture() {
+
+    public void startCapture2()
+    {
         if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
             Intent intent = new Intent(this, MitmSetupWizard.class);
             startActivity(intent);
@@ -578,13 +650,114 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
                     .show();
         } else
             doStartCaptureService();
+
+        startTimer();
+        Handler handler = new Handler();
+        handler.postDelayed(this::stopCapture, 15000);
     }
+    public void startCapture3()
+    {
+        if(Prefs.getTlsDecryptionEnabled(mPrefs) && MitmAddon.needsSetup(this)) {
+            Intent intent = new Intent(this, MitmSetupWizard.class);
+            startActivity(intent);
+            return;
+        }
+
+        if((mPcapUri == null) && (Prefs.getDumpMode(mPrefs) == Prefs.DumpMode.PCAP_FILE)) {
+            openFileSelector();
+            return;
+        }
+
+        if(!Prefs.isRootCaptureEnabled(mPrefs) && Utils.hasVPNRunning(this)) {
+            new AlertDialog.Builder(this)
+                    .setMessage(R.string.disconnect_vpn_confirm)
+                    .setPositiveButton(R.string.yes, (dialog, whichButton) -> doStartCaptureService())
+                    .setNegativeButton(R.string.no, (dialog, whichButton) -> {})
+                    .show();
+        } else
+            doStartCaptureService();
+
+        startTimer();
+        Handler handler = new Handler();
+        handler.postDelayed(this::stopCapture, 15000);
+    }
+
+    public void startCapture() {
+        if (istarget==0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            button = findViewById(R.id.button);
+            button.setText("Capturing!");
+            button.setClickable(false);
+
+            builder.setTitle("Confirm");
+            builder.setMessage("Are you sure you want to capture the traffic of all applications in your mobile?");
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.d(TAG, "code came here");
+                    startCapture2();
+                    dialog.dismiss();
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+            if (x % 2 == 0) {
+                alert.show();
+            } else startCapture2();
+            x++;
+        }
+        else
+        {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            button = findViewById(R.id.button);
+            button.setText("Capturing!");
+            button.setClickable(false);
+
+            builder.setTitle("Confirm");
+            FilterDescription = findViewById(R.id.description);
+            String appname = FilterDescription.getText().toString();
+            builder.setMessage("Are you sure you want to capture the traffic of: " + appname);
+
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.d(TAG, "code came here");
+                    startCapture3();
+                    dialog.dismiss();
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+
+            if (y % 2 == 0) {
+                alert.show();
+            } else startCapture2();
+            y++;
+
+
+
+
+        }
+    }
+
 
     public void stopCapture() {
         appStateStopping();
         CaptureService.stopService();
+
         while (true)
             if (finish_scan == 1) {
+                Log.d(TAG, "test2");
                 AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                 alertDialog.setTitle("Alert");
                 alertDialog.setMessage("Choose the file that you just saved to start the scan!");
@@ -599,6 +772,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
                 break;
             }
+        iscap=1;
     }
 
     public void openFileSelector() {
@@ -702,7 +876,7 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
         });
         builder.setNeutralButton(R.string.ok, (dialog, which) -> dialog.cancel());
 
-        builder.create().show();
+        //builder.create().show();
     }
 
     public AppState getState() {
@@ -798,10 +972,12 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
 
         Log.d(filePath, "sami 5ra");
         try {
+
             MultipartUploadRequest request = new MultipartUploadRequest(this, "http://192.168.1.14:8080/files");
             request.setMethod("POST");
             request.setNotificationConfig((x, uploadId) -> getNotificationConfig(uploadId, R.string.multipart_upload));
             request.addFileToUpload(filePath, "file");
+            request.addParameter("ID",userId);
             request.subscribe(this, this, new RequestObserverDelegate() {
                 @Override
                 public void onSuccess(@NonNull Context context, @NonNull UploadInfo uploadInfo, @NonNull ServerResponse serverResponse) {
@@ -835,7 +1011,71 @@ public class MainActivity extends BaseActivity implements NavigationView.OnNavig
             e.printStackTrace();
         }
     }
+     void startTimer() {
+        mTextViewCountDown.setVisibility(View.VISIBLE);
+        mCountDownTimer = new CountDownTimer(mTimeLeftInMillis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                mTimeLeftInMillis = millisUntilFinished;
+                updateCountDownText();
+            }
+
+
+            @Override
+            public void onFinish() {
+                mTextViewCountDown.setVisibility(View.INVISIBLE);
+                START_TIME_IN_MILLIS = 15000;
+                mTimeLeftInMillis = START_TIME_IN_MILLIS;
+
+                button = findViewById(R.id.button);
+                button.setText("Start Capture");
+                button.setClickable(true);
+
+
+            }
+        }.start();
+
 }
+
+    private void updateCountDownText() {
+        int minutes = (int) (mTimeLeftInMillis / 1000) / 60;
+        int seconds = (int) (mTimeLeftInMillis / 1000) % 60;
+
+        String timeLeftFormatted = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds);
+
+        mTextViewCountDown.setText(timeLeftFormatted);
+    }
+
+
+    public void color(){
+        response.setText(content);
+        Log.d((String) response.getText(), "hello mf red");
+        if(response.getText().toString().equals("Malware"))
+        {
+            response.setTextColor(Color.RED);
+            response.setTypeface(null, Typeface.BOLD);
+            response.setTextSize(25);
+            Log.d(TAG, "hello mf red 2");
+        }
+        if(response.getText().toString().equals("Benign"))
+        {
+            response.setTextColor(Color.GREEN);
+            response.setTypeface(null, Typeface.BOLD);
+            response.setTextSize(25);
+            Log.d(TAG, "hello mf red 2");
+        }
+        if(response.getText().toString().equals("Not Sure"))
+        {
+            response.setTextColor(Color.WHITE);
+            response.setTypeface(null, Typeface.BOLD);
+            response.setTextSize(25);
+            Log.d(TAG, "hello mf red 2");
+        }
+
+    }
+
+
+    }
 
 
 

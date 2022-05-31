@@ -4,9 +4,11 @@
 
     <item
         android:id="@+id/action_start"
-        android:title="@string/start_button"
-        android:orderInCategory="10"
         android:icon="@drawable/ic_play_arrow"
+        android:orderInCategory="10"
+        android:title="@string/start_button"
+        android:visibility="gone"
+        android:visible="false"
         app:showAsAction="always" />
 
     <item
@@ -14,13 +16,16 @@
         android:title="@string/stop_button"
         android:orderInCategory="10"
         android:icon="@drawable/ic_media_stop"
+        android:visibility="gone"
         android:visible="false"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_settings"
-        android:title="@string/title_activity_settings"
-        android:orderInCategory="100"
         android:icon="@drawable/ic_settings"
+        android:orderInCategory="100"
+        android:title="@string/title_activity_settings"
+        android:visibility="gone"
+        android:visible="false"
         app:showAsAction="ifRoom" />
 </menu>

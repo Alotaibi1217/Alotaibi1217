@@ -8,26 +8,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/app_bar_layout"
-        android:fitsSystemWindows="true">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:background="@color/colorActionBar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:theme="@style/AppBarOverlay"
-            app:popupTheme="@style/PopupOverlay" />
-
-    </com.google.android.material.appbar.AppBarLayout>
-
     <LinearLayout
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+
         android:orientation="vertical">
 
         <com.google.android.material.tabs.TabLayout
@@ -35,6 +20,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:tabTextColor="@color/colorTabText"
+            android:visibility="gone"
+            tools:visibility="gone"
             app:tabSelectedTextColor="@color/colorTabTextSelected"
             app:tabIndicatorColor="@color/colorTab"
             app:tabMaxWidth="0dp"
@@ -44,11 +31,14 @@
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+
             android:layout_weight="1" />
 
         <FrameLayout
             android:id="@+id/adContainer"
             android:layout_width="match_parent"
+            android:visibility="gone"
+            tools:visibility="gone"
             android:layout_height="wrap_content" />
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

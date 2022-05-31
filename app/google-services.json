@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "808229664282",
+    "project_id": "maldefender",
+    "storage_bucket": "maldefender.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808229664282:android:e04be8358eee1c3b0f43a3",
+        "android_client_info": {
+          "package_name": "com.lag.maldefender"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "808229664282-vddfc492okldmcmib8eqfp4g03mtjamg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAFUw6bJJefzfRfXBRaUxb2HbTMKv2-t4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "808229664282-vddfc492okldmcmib8eqfp4g03mtjamg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

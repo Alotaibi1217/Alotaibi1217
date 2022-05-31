@@ -11,6 +11,9 @@
         <item name="alertDialogTheme">@style/AppAlertDialogTheme</item>
         <item name="actionBarStyle">@style/MyActionBar</item>
     </style>
+    <style name="Button.White" parent="ThemeOverlay.AppCompat">
+        <item name="colorAccent">@android:color/white</item>
+    </style>
 
     <!-- Make the Widget.MaterialComponents.Button.TextButton of AlertDialog use the accent color -->
     <style name="AppAlertDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">

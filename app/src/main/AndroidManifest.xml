@@ -26,7 +26,7 @@
         android:banner="@drawable/banner"
         android:supportsRtl="true"
         android:extractNativeLibs="true"
-        android:theme="@style/AppTheme"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:fullBackupContent="true"
@@ -36,6 +36,7 @@
         <activity
             android:name="com.lag.maldefender.activities.MainActivity"
             android:theme="@style/AppTheme.SplashScreen"
+
             android:launchMode="singleTop"
             android:exported="true">
 
@@ -115,6 +116,8 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+
+
     </application>
 
 </manifest>

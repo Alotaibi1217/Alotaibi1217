@@ -65,13 +65,13 @@ public class Prefs {
 
     public static DumpMode getDumpMode(String pref) {
         if(pref.equals(DUMP_HTTP_SERVER))
-            return(DumpMode.HTTP_SERVER);
+            return(DumpMode.PCAP_FILE);
         else if(pref.equals(DUMP_PCAP_FILE))
             return(DumpMode.PCAP_FILE);
         else if(pref.equals(DUMP_UDP_EXPORTER))
-            return(DumpMode.UDP_EXPORTER);
+            return(DumpMode.PCAP_FILE);
         else
-            return(DumpMode.NONE);
+            return(DumpMode.PCAP_FILE);
     }
 
     /* Prefs with defaults */

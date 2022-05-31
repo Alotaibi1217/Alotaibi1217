@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -36,6 +37,10 @@ import com.lag.maldefender.model.Blacklists;
 import com.lag.maldefender.model.CtrlPermissions;
 import com.lag.maldefender.model.MatchList;
 import com.lag.maldefender.model.Prefs;
+import com.onesignal.OSMutableNotification;
+import com.onesignal.OSNotification;
+import com.onesignal.OSNotificationReceivedEvent;
+import com.onesignal.OneSignal;
 
 
 import net.gotev.uploadservice.UploadServiceConfig;
@@ -53,11 +58,13 @@ import cat.ereza.customactivityoncrash.config.CaocConfig;
  * https://stackoverflow.com/questions/56496714/android-webview-causing-runtimeexception-at-webviewdelegate-getpackageid
  */
 public class PCAPdroid extends Application {
+    private static final String ONESIGNAL_APP_ID = "c6e12511-5f40-4587-a512-628bf5e75f77";
     public static final String notificationChannelID = "TestChannel";
     private static final String TAG = "PCAPdroid";
     private MatchList mVisMask;
     private NotificationCompat.Builder xyz;
     private MatchList mMalwareWhitelist;
+
     private MatchList mBlocklist;
     private Blacklists mBlacklists;
     private CtrlPermissions mCtrlPermissions;
@@ -67,6 +74,9 @@ public class PCAPdroid extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        OneSignal.setLogLevel(OneSignal.LOG_LEVEL.VERBOSE, OneSignal.LOG_LEVEL.NONE);
+        OneSignal.initWithContext(this);
+        OneSignal.setAppId(ONESIGNAL_APP_ID);
 
         createNotificationChannel();
         UploadServiceConfig.initialize(this,notificationChannelID,BuildConfig.DEBUG);
@@ -99,6 +109,9 @@ public class PCAPdroid extends Application {
                 theme = "system";
         }
         Utils.setAppTheme(theme);
+
+
+
     }
 
     private void createNotificationChannel()
@@ -153,4 +166,10 @@ public class PCAPdroid extends Application {
             mCtrlPermissions = new CtrlPermissions(this);
         return mCtrlPermissions;
     }
+
+
+
+
+
+
 }

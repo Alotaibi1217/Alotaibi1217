@@ -19,10 +19,13 @@
 
 package com.lag.maldefender.fragments;
 
+
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -74,10 +77,13 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     private MenuItem mStartBtn;
     private MenuItem mStopBtn;
     private MenuItem mMenuSettings;
+    private int x=0;
+    private int y=0;
     private TextView mInterfaceInfo;
     private TextView mCollectorInfo;
     private TextView mCaptureStatus;
     private View mQuickSettings;
+    public String description;
     private MainActivity mActivity;
     private SharedPreferences mPrefs;
     private BroadcastReceiver mReceiver;
@@ -134,6 +140,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
+
         return inflater.inflate(R.layout.status, container, false);
     }
 
@@ -150,7 +157,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
 
         DumpModesAdapter dumpModeAdapter = new DumpModesAdapter(requireContext());
         Spinner dumpMode = view.findViewById(R.id.dump_mode_spinner);
-        dumpMode.setAdapter(dumpModeAdapter);
+        //dumpMode.setAdapter(dumpModeAdapter);
         int curSel = dumpModeAdapter.getModePos(mPrefs.getString(Prefs.PREF_PCAP_DUMP_MODE, Prefs.DEFAULT_DUMP_MODE));
         dumpMode.setSelection(curSel);
 
@@ -167,7 +174,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
-
+        Log.d(TAG, "came here");
         mAppFilterSwitch = view.findViewById(R.id.app_filter_switch);
         View filterRow = view.findViewById(R.id.app_filter_text);
         TextView filterTitle = filterRow.findViewById(R.id.title);
@@ -192,16 +199,25 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         }
 
         filterTitle.setText(R.string.app_filter);
-
+        mAppFilterSwitch.setChecked(false);
+        x=0;
         mAppFilterSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            x=1;
             if(isChecked) {
-                if((mAppFilter == null) || (mAppFilter.isEmpty()))
+                if((mAppFilter == null) || (mAppFilter.isEmpty())) {
                     openAppFilterSelector();
-            } else
-                setAppFilter(null);
-        });
+                    mActivity.istarget=1;
+                    mAppFilterSwitch.setChecked(false);
+                    x=0;
+                }
 
+            } else {
+                mActivity.istarget=0;
+                setAppFilter(null);
+            }
+        });
         refreshFilterInfo();
+        mAppFilterSwitch.setChecked(false);
 
         mCaptureStatus.setOnClickListener(v -> {
             if(mActivity.getState() == AppState.running) {
@@ -245,12 +261,15 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mAppFilterSwitch.setChecked(true);
 
         AppDescriptor app = AppsResolver.resolve(requireContext().getPackageManager(), mAppFilter, 0);
-        String description;
+
+
 
         if(app == null)
             description = mAppFilter;
         else {
-            description = app.getName() + " (" + app.getPackageName() + ")";
+            description = app.getName();
+
+
             int height = mFilterDescription.getMeasuredHeight();
 
             if((height > 0) && (app.getIcon() != null)) {
@@ -262,6 +281,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         }
 
         mFilterDescription.setText(description);
+
     }
 
     private void setAppFilter(AppDescriptor filter) {
@@ -269,6 +289,7 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mAppFilter = (filter != null) ? filter.getPackageName() : "";
 
         editor.putString(Prefs.PREF_APP_FILTER, mAppFilter);
+        Log.d(mAppFilter,"selected app");
         editor.apply();
         refreshFilterInfo();
         recheckFilterWarning();
@@ -283,33 +304,33 @@ public class StatusFragment extends Fragment implements AppStateListener, AppsLo
         mCaptureStatus.setText(Utils.formatBytes(stats.bytes_sent + stats.bytes_rcvd));
     }
 
-private void refreshPcapDumpInfo() {
+    private void refreshPcapDumpInfo() {
         String info = "";
 
         Prefs.DumpMode mode = CaptureService.getDumpMode();
 
         switch (mode) {
-        case NONE:
-            info = getString(R.string.no_dump_info);
-            break;
-        case HTTP_SERVER:
-            info = String.format(getResources().getString(R.string.http_server_status),
-                    Utils.getLocalIPAddress(mActivity), CaptureService.getHTTPServerPort());
-            break;
-        case PCAP_FILE:
-            info = getString(R.string.pcap_file_info);
+            case NONE:
+                info = getString(R.string.no_dump_info);
+                break;
+            case HTTP_SERVER:
+                info = String.format(getResources().getString(R.string.http_server_status),
+                        Utils.getLocalIPAddress(mActivity), CaptureService.getHTTPServerPort());
+                break;
+            case PCAP_FILE:
+                info = getString(R.string.pcap_file_info);
 
-            if(mActivity != null) {
-                String fname = mActivity.getPcapFname();
+                if(mActivity != null) {
+                    String fname = mActivity.getPcapFname();
 
-                if(fname != null)
-                    info = fname;
-            }
-            break;
-        case UDP_EXPORTER:
-            info = String.format(getResources().getString(R.string.collector_info),
-                    CaptureService.getCollectorAddress(), CaptureService.getCollectorPort());
-            break;
+                    if(fname != null)
+                        info = fname;
+                }
+                break;
+            case UDP_EXPORTER:
+                info = String.format(getResources().getString(R.string.collector_info),
+                        CaptureService.getCollectorAddress(), CaptureService.getCollectorPort());
+                break;
         }
 
         mCollectorInfo.setText(info);
@@ -426,4 +447,10 @@ private void refreshPcapDumpInfo() {
         Log.d(TAG, "loading " + installedApps.size() +" apps in dialog, icons=" + installedApps);
         mOpenAppsList.setApps(installedApps);
     }
+
+
+
+
+
+
 }

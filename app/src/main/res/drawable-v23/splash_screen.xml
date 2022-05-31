@@ -6,7 +6,7 @@
   <item android:drawable="@color/colorPrimaryDark" />
 
   <item
-      android:drawable="@drawable/ic_logo"
+      android:drawable="@drawable/mal_def_logo"
       android:width="128dp"
       android:height="128dp"
       android:gravity="center"
