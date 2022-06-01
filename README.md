@@ -10,6 +10,10 @@ of the application , where there’s a button, Target App, to enable capturing t
 application, as opposed to capturing all traffic, and another button, Start Capture, to initiate the scanning of an
 application.
 
+<p align="center">
+<img src="[https://raw.githubusercontent.com/emanuele-f/PCAPdroid/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg](https://raw.githubusercontent.com/Alotaibi1217/Maldefender-Android/master/Screenshots/Screenshot_3.png)" width="190" />
+</p>
+
 ## Building
 
 1. On Windows, installgitforwindows
