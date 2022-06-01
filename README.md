@@ -11,7 +11,7 @@ application, as opposed to capturing all traffic, and another button, Start Capt
 application.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/Alotaibi1217/Maldefender-Android/master/Screenshots/Screenshot_3.png" width="190" /></p>
+<img src="https://raw.githubusercontent.com/Alotaibi1217/Maldefender-Android/master/Screenshots/Screenshot_3.png"  /></p>
 
 ## Building
 
