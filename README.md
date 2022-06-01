@@ -42,7 +42,7 @@ type, as it’s more reliable than using the extension of the file. If an invali
 deletes the file from its memory.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/Alotaibi1217/Maldefender-Android/master/Screenshots/Screenshot_9.png"  /></p>
+<img src="https://raw.githubusercontent.com/Alotaibi1217/Maldefender-Android/master/Screenshots/Screenshot_10.png"  /></p>
 
 
 
