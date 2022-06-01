@@ -51,7 +51,7 @@ deletes the file from its memory.
 
 ## Building
 
-1. On Windows, installgitforwindows
+1. On Windows, install git for windows
 2. Clone this repo
 3. Inside the repo dir, run `git submodule update --init`. The `submodules` directory should get populated.
 4. Open the project in Android Studio, install the appropriate SDK and the NDK
